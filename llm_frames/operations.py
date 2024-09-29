@@ -1,9 +1,17 @@
-from pydantic import BaseModel 
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
+
 #from openai.resources.beta.chat import _type_to_response_format
-from openai.lib._parsing._completions import type_to_response_format_param as _type_to_response_format
+#from openai.lib._parsing._completions import type_to_response_format_param as _type_to_response_format
 
 class SemanticOperation(BaseModel):
+    """
+    SemanticOperation is a template for defining operations to be applied to a DataFrame.
+    """
+    
+    # excludes protected namespace: `model_`
+    model_config = ConfigDict(protected_namespaces=())
+
     input_column: str
     output_column: str
     prompt_message: str
