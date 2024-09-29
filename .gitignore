@@ -1,3 +1,4 @@
 *-secret.*
 *tests.*
 .env
+__pycache__/
