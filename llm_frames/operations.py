@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, Union, Dict, Type
 
 #from openai.resources.beta.chat import _type_to_response_format
 #from openai.lib._parsing._completions import type_to_response_format_param as _type_to_response_format
@@ -8,7 +8,7 @@ class SemanticOperation(BaseModel):
     """
     SemanticOperation is a template for defining operations to be applied to a DataFrame.
     """
-    
+
     # excludes protected namespace: `model_`
     model_config = ConfigDict(protected_namespaces=())
 
@@ -18,7 +18,7 @@ class SemanticOperation(BaseModel):
     system_message: Optional[str] = None
     model_name: Optional[str] = None
     model_params: Optional[dict] = None
-    response_format: Optional[BaseModel] = None
+    response_format: Optional[Type[BaseModel]] = None
 
     def construct_messages(self, context: str) -> dict:
         """Constructs a list of messages to be sent to the OpenAI API."""
@@ -41,9 +41,12 @@ class SemanticOperation(BaseModel):
             "body": {
                 "model": self.model_name,
                 "messages": self.construct_messages(context),
-                **self.model_params
             }
         }
+        if self.model_params:
+            for param_name, param_value in self.model_params.items():
+                request_included_in_batch["body"][param_name] = param_value 
+
         if self.response_format:
             request_included_in_batch["body"]["response_format"] = {
                 "type": "json_schema",
