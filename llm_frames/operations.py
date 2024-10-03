@@ -1,8 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, Union, Dict, Type
 
-#from openai.resources.beta.chat import _type_to_response_format
-#from openai.lib._parsing._completions import type_to_response_format_param as _type_to_response_format
 
 class SemanticOperation(BaseModel):
     """
@@ -26,7 +24,7 @@ class SemanticOperation(BaseModel):
         messages = []
         if self.system_message:
             messages.append({"role": "system", "content": self.system_message})
-        
+
         full_prompt = f"{self.prompt_message} Context: {context}"
         messages.append({"role": "user", "content": full_prompt})
         return messages
@@ -57,6 +55,24 @@ class SemanticOperation(BaseModel):
                 }
             }
         return request_included_in_batch
+
+
+class TranslationOperation(SemanticOperation):
+    """
+    Example of a SemanticOperation that translates text from one language to another.
+    """
+    input_column: str = Field("review", description="The name of the column containing the text to be translated.")
+    target_language: str = Field("pl", description="The language to translate the text into.")
+
+    def __init__(self, input_column: str, target_language: str, **params):
+
+        super().__init__(
+            input_column=input_column,
+            output_column=params.get("output_column") or "review_pl",
+            prompt_message=f"Translate the following text to {target_language}.",
+            model_name=params.get("input_column") or "gpt-4o-mini",
+            response_format=params.get("input_column"),
+        )
 
 
 
