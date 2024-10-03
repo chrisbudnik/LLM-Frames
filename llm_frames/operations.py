@@ -68,7 +68,7 @@ class TranslationOperation(SemanticOperation):
 
         super().__init__(
             input_column=input_column,
-            output_column=params.get("output_column") or "review_pl",
+            output_column=params.get("output_column") or f"review_{target_language}",
             prompt_message=f"Translate the following text to {target_language}.",
             model_name=params.get("input_column") or "gpt-4o-mini",
             response_format=params.get("input_column"),
