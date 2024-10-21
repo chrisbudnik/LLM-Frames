@@ -4,6 +4,7 @@ import pandas as pd
 from typing import List, Dict
 from .operations import SemanticOperation
 import tiktoken
+from uuid import uuid4
 
 
 class LLMFrame:
@@ -36,12 +37,14 @@ class LLMFrame:
             self,
             batch_file_name: str,
             operation: SemanticOperation, 
-            id_column: str
+            id_column: str = "request_id"
         ) -> None:
         """Creates a batch jsonl file for the OpenAI Async API."""
 
         assert len(self.df) < 50_000, "Maximum number of requests per batch is 50,000."
-
+        assert id_column in self.df.columns, f"Column '{id_column}' not found in DataFrame."
+        
+        batch_file_name = batch_file_name + ".jsonl"
         with open(batch_file_name, "w") as f:
             for idx, row in self.df.iterrows():
                 batch = operation.construct_batch_request(
@@ -66,8 +69,14 @@ class LLMFrame:
             "min_tokens": token_counts.min()
         }
         return token_usage
+    
+    def add_unique_id_column(self, id_column: str = "request_id") -> None:
+        """Adds a unique identifier column to the DataFrame."""
 
-    def _count_token_usage(self, text: str, model_name: str) -> int:
+        self.df[id_column] = uuid4().hex
+
+    @staticmethod
+    def _count_token_usage(text: str, model_name: str) -> int:
         """Returns the number of tokens in a text string."""
         
         encoding = tiktoken.encoding_for_model(model_name)
